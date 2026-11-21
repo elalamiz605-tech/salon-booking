@@ -1,7 +1,7 @@
 # Salon Booking — Design
 
 Date: 2026-11-21
-Status: draft, awaiting owner approval
+Status: awaiting owner approval
 
 ## Intent and why
 
@@ -92,6 +92,17 @@ tests, screenshots).
 - English for code, README, admin and default public language; Spanish toggle on public
   pages; languages configurable per client.
 - Approach A.
+- **Who edits services, prices, staff and hours: Ziad only, via the configuration file**
+  (option 1). The salon asks Ziad, who edits the config and redeploys; this is part of
+  the paid monthly support. Consequences:
+  - Services, staff, weekly opening hours and each stylist's recurring weekly days off
+    live in the configuration file only; there are no admin screens to edit them.
+  - One-off closures and time off (holidays, a closed afternoon) are admin time blocks
+    stored in the database.
+  - Each booking stores the service name, duration and price as they were at booking
+    time, so later config changes never alter existing bookings.
+  - If a config change removes a stylist or service that still has future bookings,
+    those bookings are kept and flagged in the admin dashboard for the salon to handle.
 
 ## Calls made by Claude (owner may override)
 
