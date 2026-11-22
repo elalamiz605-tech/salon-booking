@@ -8,6 +8,7 @@ export default defineConfig({
     testTimeout: 30_000,
   },
   resolve: {
-    alias: { "@": path.resolve(__dirname, "src"), "@config": path.resolve(__dirname, "salon.config.ts") },
+    alias: { "@": path.resolve(__dirname, "src"), // Unit tests always run against the demo salon, whatever salon.config.ts exports.
+      "@config": path.resolve(__dirname, "src/config/demo.config.ts") },
   },
 });
