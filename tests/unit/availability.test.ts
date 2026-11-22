@@ -108,3 +108,12 @@ describe("pickBarber", () => {
     expect(pickBarber(["iker", "alvaro"], {}, config)).toBe("alvaro");
   });
 });
+
+import { barberWorkdays } from "@/lib/availability";
+
+describe("barberWorkdays", () => {
+  test("salon open days minus the barber's days off", () => {
+    expect(barberWorkdays(config, "marco")).toEqual([2, 4, 5, 6]);
+    expect(barberWorkdays(config, "alvaro")).toEqual([2, 3, 4, 5, 6]);
+  });
+});

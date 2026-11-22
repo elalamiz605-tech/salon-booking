@@ -82,3 +82,9 @@ export function pickBarber(candidates: string[], bookingsToday: Record<string, n
   const order = (id: string) => config.barbers.findIndex((b) => b.id === id);
   return [...candidates].sort((a, b) => (bookingsToday[a] ?? 0) - (bookingsToday[b] ?? 0) || order(a) - order(b))[0];
 }
+
+/** Weekdays (0 = Sunday) on which a barber has working hours, sorted. */
+export function barberWorkdays(config: SalonConfig, barberId: string): number[] {
+  const sample: Record<number, LocalDate> = { 0: "2026-01-04", 1: "2026-01-05", 2: "2026-01-06", 3: "2026-01-07", 4: "2026-01-08", 5: "2026-01-09", 6: "2026-01-10" };
+  return [0, 1, 2, 3, 4, 5, 6].filter((d) => workingWindow(config, barberId, sample[d]) !== null);
+}

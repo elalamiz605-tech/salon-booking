@@ -21,7 +21,8 @@ export default async function ManagePage({ params }: { params: Promise<{ locale:
   const t = getDict(locale);
   const booking = await getBookingByToken(await siteDb(), token);
   const state = manageViewState(booking, new Date(), config);
-  const url = `${await baseUrl()}/${locale}/booking/${token}`;
+  const path = `/${locale}/booking/${token}`;
+  const url = `${await baseUrl().catch(() => "")}${path}`;
 
   const heading = { confirmed: t.manage.booked, tooLate: booking?.status === "cancelled" ? t.manage.cancelled : t.manage.tooLate, cancelled: t.manage.cancelled, anonymized: t.manage.anonymized, unknown: t.manage.notFound }[state];
   const intro = {

@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/home/Sections";
 import { formatPrice, getDict } from "@/i18n";
 import { asLocale } from "@/i18n/locale";
-import { bookableDates } from "@/lib/availability";
+import { barberWorkdays, bookableDates } from "@/lib/availability";
 import { siteDb } from "@/server/site";
 import { BookingForm, type FormData as BookingFormData } from "./BookingForm";
 
@@ -19,13 +19,18 @@ export default async function BookPage({ params, searchParams }: { params: Promi
   const sp = await searchParams;
   await siteDb();
   const t = getDict(locale);
+  const initialService = config.services.some((s) => s.id === sp.service) ? sp.service! : null;
+  const barber = config.barbers.find((b) => b.id === sp.barber);
+  // A barber link only applies when that barber offers the requested service.
+  const initialBarber = barber && (!initialService || barber.serviceIds.includes(initialService)) ? barber.id : null;
   const data: BookingFormData = {
     locale,
     services: config.services.map((s) => ({ id: s.id, name: s.name[locale], description: s.description[locale], durationMin: s.durationMin, price: formatPrice(s.priceCents, locale) })),
     barbers: config.barbers.map((b) => ({ id: b.id, name: b.name, bio: b.bio[locale], serviceIds: b.serviceIds })),
     dates: bookableDates(config, new Date()),
-    initialBarber: config.barbers.some((b) => b.id === sp.barber) ? sp.barber! : null,
-    initialService: config.services.some((s) => s.id === sp.service) ? sp.service! : null,
+    initialService,
+    initialBarber,
+    workdays: Object.fromEntries(config.barbers.map((b) => [b.id, barberWorkdays(config, b.id)])),
     t: t.book,
   };
   return (
