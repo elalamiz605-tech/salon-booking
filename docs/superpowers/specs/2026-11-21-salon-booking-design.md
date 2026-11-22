@@ -1,7 +1,7 @@
 # Salon Booking — Design
 
 Date: 2026-11-21
-Status: awaiting owner approval
+Status: approved by owner (2026-11-22)
 
 ## Intent and why
 
@@ -87,11 +87,30 @@ tests, screenshots).
 
 ## Decided by the owner
 
-- Hair salon, fictional, in Madrid.
+- **Men's barbershop** (changed from a general hair salon after the owner's reference
+  photos), fictional, in Malasaña, Madrid. "Stylist" in this document means "barber".
 - Resellable via a single configuration file (not demo-only).
 - English for code, README, admin and default public language; Spanish toggle on public
   pages; languages configurable per client.
 - Approach A.
+- **Visual direction (approved from the live prototype, 2026-11-22):**
+  prototype at https://claude.ai/artifact/T85PCxoQna1sdux9J6McZP — the homepage hero must
+  match it.
+  - Hero: a full-screen, realistic AI video of a barber blow-drying a client's hair
+    (10 s seamless loop, no faces anywhere), played as a WebGL texture with a depth map so
+    the camera drifts in 3D and follows the pointer. The still photo shows first and stays
+    as the fallback (no WebGL, reduced motion, slow connection).
+  - Living light on top: LED glow and sweep, dust motes, film grain.
+  - Interface motion: headline revealed line by line with a champagne sheen on the italic
+    words, staggered fade-ups, a scrolling marquee of services, a gold cursor ring and
+    magnetic buttons on desktop. All of it is disabled under `prefers-reduced-motion`.
+  - Palette: graphite black, ivory, champagne accent, oxblood primary button. Type:
+    Cormorant Garamond (display) + Manrope (text). Hairline champagne rules.
+  - Booking and admin pages use the same palette and type but stay calm and fast (no
+    video, no 3D): the motion belongs to the homepage.
+  - Hero assets (photo, depth map, MP4 + WebM video) live in the repo under
+    `public/hero/` and are part of the per-client configuration (a client can swap in
+    their own photo/video; without a video the photo + 3D depth still works).
 - **Who edits services, prices, staff and hours: Ziad only, via the configuration file**
   (option 1). The salon asks Ziad, who edits the config and redeploys; this is part of
   the paid monthly support. Consequences:
@@ -106,9 +125,10 @@ tests, screenshots).
 
 ## Calls made by Claude (owner may override)
 
-- **Demo salon name**: "Rizo Studio" (rizo = curl), Madrid. Fictional address, phone and
-  team of three stylists, around eight services (cut, cut & blow-dry, colour, highlights,
-  beard trim, kids' cut…) with realistic durations and euro prices.
+- **Demo salon name**: "Rizo Studio" (rizo = curl), Malasaña, Madrid. Fictional address
+  (Calle del Pez 21), phone and a team of three barbers, around seven services (scissor
+  cut, skin fade, beard sculpt, hot-towel shave, blow-dry & style, kids' cut, grey
+  blending) with realistic durations and euro prices. Open Tuesday–Saturday, 10:00–20:00.
 - **Demo mode** (on for the public demo, off for client deployments via a config/env
   flag): the admin login page shows demo credentials; the database is reset nightly to a
   realistic seed (a few days of past and upcoming bookings) by a scheduled job; outgoing
@@ -124,8 +144,8 @@ tests, screenshots).
   appointments per service.
 - **"Any available stylist"**: assigns the stylist with the fewest bookings that day among
   those free for the whole slot.
-- **Visual direction**: decided during build using the frontend design guidance; colours
-  and fonts are configuration tokens so each client gets their own look.
+- **Per-client look**: colours, fonts and hero media are configuration tokens so each
+  client gets their own look without code changes.
 - **Client hosting**: Vercel's free (Hobby) plan is non-commercial, so it hosts only the
   demo. Each paying client gets their own Vercel and Neon accounts (Ziad sets them up and
   hands them over; no running cost for Ziad). The README deployment guide is written for
