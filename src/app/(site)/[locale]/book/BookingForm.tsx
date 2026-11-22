@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import type { Locale } from "@/config/schema";
 import type { Dict } from "@/i18n";
+import { HONEYPOT_FIELD } from "@/lib/honeypot";
 import { submitBooking } from "./actions";
 
 export type FormData = {
@@ -14,6 +15,8 @@ export type FormData = {
   dates: string[];
   initialBarber: string | null;
   initialService: string | null;
+  /** Weekdays (0 = Sunday) each barber works. */
+  workdays: Record<string, number[]>;
   t: Dict["book"];
 };
 
@@ -46,6 +49,11 @@ export function BookingForm({ data }: { data: FormData }) {
 
   const service = data.services.find((s) => s.id === serviceId) ?? null;
   const barber = data.barbers.find((b) => b.id === barberId) ?? null;
+  const dates = useMemo(() => {
+    if (!barberId) return data.dates;
+    const days = data.workdays[barberId] ?? [];
+    return data.dates.filter((d) => days.includes(new Date(`${d}T12:00:00Z`).getUTCDay()));
+  }, [barberId, data.dates, data.workdays]);
   const barbersForService = useMemo(() => data.barbers.filter((b) => !serviceId || b.serviceIds.includes(serviceId)), [data.barbers, serviceId]);
 
   useEffect(() => {
@@ -153,7 +161,7 @@ export function BookingForm({ data }: { data: FormData }) {
         <section className="flex flex-col gap-4">
           <h2 className="font-display text-3xl">{t.chooseDate}</h2>
           <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2">
-            {data.dates.map((d) => {
+            {dates.map((d) => {
               const p = dateParts(d, locale);
               return (
                 <button key={d} type="button" data-date={d} aria-label={p.long}
@@ -198,7 +206,7 @@ export function BookingForm({ data }: { data: FormData }) {
           <Field id="phone" label={t.phone}><input id="phone" name="phone" type="tel" autoComplete="tel" className="input" /></Field>
           <Field id="notes" label={t.notes}><textarea id="notes" name="notes" rows={3} maxLength={500} className="input" /></Field>
           <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
-            <label htmlFor="company">Company</label><input id="company" name="company" tabIndex={-1} autoComplete="off" />
+            <label htmlFor={HONEYPOT_FIELD}>Leave empty</label><input id={HONEYPOT_FIELD} name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="new-password" />
           </div>
           <div className="flex flex-col gap-1">
             <label className="flex items-start gap-3 text-sm">

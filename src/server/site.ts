@@ -3,6 +3,7 @@ import config from "@config";
 import { getDb } from "@/db/client";
 import type { Db } from "@/db/client";
 import { isDemo, maybeResetDemo } from "@/server/demo";
+import { resolveBaseUrl } from "@/lib/base-url";
 
 /** The shared database, after an hourly demo reset when the site runs in demo mode. */
 export async function siteDb(): Promise<Db> {
@@ -17,11 +18,14 @@ export async function clientIp(): Promise<string> {
   return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "local";
 }
 
-/** Absolute base URL for links in emails. */
+/** Absolute base URL for links in emails (see resolveBaseUrl: production never trusts request headers). */
 export async function baseUrl(): Promise<string> {
-  if (process.env.APP_URL) return process.env.APP_URL.replace(/\/$/, "");
   const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
+  return resolveBaseUrl({
+    appUrl: process.env.APP_URL,
+    production: process.env.NODE_ENV === "production",
+    vercelProductionUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    host: h.get("host"),
+    forwardedHost: h.get("x-forwarded-host"),
+  });
 }

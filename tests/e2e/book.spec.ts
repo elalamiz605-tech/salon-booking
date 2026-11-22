@@ -53,3 +53,26 @@ test.describe("booking flow", () => {
     await expect(page.getByText("Iker").first()).toBeVisible();
   });
 });
+
+test.describe("booking form details", () => {
+  test("the anti-spam field cannot be filled by browser autofill", async ({ page }) => {
+    const { time } = await pickFirstSlot(page, { service: "Scissor cut", barber: "Iker" });
+    await page.getByRole("button", { name: time, exact: true }).click();
+    const hidden = await page.locator("form input[name]").evaluateAll((els) =>
+      els.filter((e) => (e as HTMLElement).offsetParent === null || e.getBoundingClientRect().right < 0)
+        .map((e) => ({ name: e.getAttribute("name"), ac: e.getAttribute("autocomplete") })));
+    expect(hidden.length).toBe(1);
+    expect(hidden[0].name).not.toMatch(/company|organi[sz]ation|org|name|mail|phone|tel|address|street|city|zip|postal|url|website/i);
+    expect(hidden[0].ac).toBe("new-password");
+  });
+
+  test("a barber's weekly day off is not offered", async ({ page }) => {
+    await page.goto("/en/book");
+    await page.getByRole("button", { name: /^Skin fade/ }).click();
+    await page.getByRole("button", { name: /^Marco/ }).click();
+    const dates = await page.locator("[data-date]").evaluateAll((els) => els.map((e) => e.getAttribute("data-date")!));
+    expect(dates.length).toBeGreaterThan(5);
+    const weekdays = dates.map((d) => new Date(`${d}T12:00:00Z`).getUTCDay());
+    expect(weekdays).not.toContain(3);
+  });
+});
