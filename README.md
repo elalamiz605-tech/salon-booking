@@ -45,7 +45,7 @@ Set `DEMO_MODE=true` to load demo data and show the demo login.
 
 1. In **`salon.config.ts`**, export the client's own `defineConfig({...})` (copy `src/config/demo.config.ts` to start): name, legal name, address, phone, email, map coordinates and Google Maps link, opening hours, services (names in each language, duration, price, buffer), barbers (services, hours, days off), languages, colours and fonts, booking rules.
 2. Replace the files in **`public/hero/`**: `hero.webp` (16:9 photo), `depth.webp` (its depth map, white = near) and optionally `hero.mp4` / `hero.webm`. Without a video, set `hero.video` to `null`: the photo still moves in 3D.
-3. `npm test` and `npm run e2e` (the end-to-end tests read names from the config).
+3. Check it with `npm run dev`, then `npm run typecheck && npm run build`. The automated tests always run on the Rizo demo data, so they stay valid for every client.
 
 Nothing else needs to change. Services, prices, team and weekly hours are edited in the config by the developer (part of the monthly support); one-off closures are added by the salon in the dashboard under **Time off**.
 
