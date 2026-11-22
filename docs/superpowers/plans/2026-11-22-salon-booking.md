@@ -94,7 +94,7 @@ tests/unit/*.test.ts, tests/e2e/*.spec.ts, tests/helpers/db.ts
   - `type DayHours = { open: string; close: string } | null` (`"HH:mm"`); `type WeekHours = Record<0|1|2|3|4|5|6, DayHours>` (0 = Sunday)
   - `type Service = { id: string; name: Localized; description: Localized; durationMin: number; priceCents: number; bufferMin: number }`
   - `type Barber = { id: string; name: string; bio: Localized; serviceIds: string[]; hours?: Partial<WeekHours>; daysOff: number[] }`
-  - `type SalonConfig = { name; legalName; tagline: Localized; address; phone; email; timezone; currency: 'EUR'; locales: Locale[]; defaultLocale: Locale; theme: { colors: { ink; ivory; ivoryDim; accent; primary; primaryHover }; fonts: { display; body } }; hero: { photo; depth; video: { mp4; webm } | null }; openingHours: WeekHours; slotStepMin; minNoticeMin; bookingWindowDays; cancelCutoffMin; retentionMonths; rateLimitPerHour; services: Service[]; barbers: Barber[] }`
+  - `type SalonConfig = { name; legalName; tagline: Localized; address; phone; email; timezone; currency: 'EUR'; locales: Locale[]; defaultLocale: Locale; theme: { colors: { ink; ivory; ivoryDim; accent; primary; primaryHover }; fonts: { display; body } }; hero: { photo; depth; video: { mp4; webm } | null }; location: { lat: number; lng: number; mapsUrl: string }; openingHours: WeekHours; slotStepMin; minNoticeMin; bookingWindowDays; cancelCutoffMin; retentionMonths; rateLimitPerHour; services: Service[]; barbers: Barber[] }`
   - `salonConfigSchema` (zod) and `defineConfig(c: SalonConfig): SalonConfig` (validates, throws a readable error).
   - `config` default export of `salon.config.ts`.
 
@@ -105,7 +105,7 @@ tests/unit/*.test.ts, tests/e2e/*.spec.ts, tests/helpers/db.ts
   - `rejects a missing translation`: a service with `name: { en: 'X' }` → throws.
 - [ ] **Step 2:** Run `npx vitest run tests/unit/config.test.ts` → FAIL (module missing).
 - [ ] **Step 3:** Implement the schema with cross-field `superRefine` checks (service ids unique, barber ids unique, barber service ids exist, `defaultLocale ∈ locales`, open < close).
-- [ ] **Step 4:** Write `salon.config.ts` with the spec's demo data: Rizo Studio, legal name "Rizo Studio S.L.", Calle del Pez 21, 28004 Madrid, phone `+34 910 000 000`, `hola@rizostudio.example`; hours Tue–Sat 10:00–20:00, Sun/Mon closed; `slotStepMin 15`, `minNoticeMin 120`, `bookingWindowDays 30`, `cancelCutoffMin 120`, `retentionMonths 24`, `rateLimitPerHour 5`. Services (id, minutes, euros): `scissor-cut` 45 €32, `skin-fade` 40 €28, `beard-sculpt` 25 €18, `hot-towel-shave` 40 €28, `blow-dry-style` 30 €20, `kids-cut` 30 €18, `grey-blending` 30 €25, each `bufferMin 5`, EN + ES names/descriptions. Barbers: `alvaro` (all services, Tue–Sat), `marco` (all but `hot-towel-shave`, day off Wednesday = 3), `iker` (cuts, fades, kids, blow-dry; hours 12:00–20:00 every open day). Hero: `/hero/hero.webp`, `/hero/depth.webp`, video `/hero/hero.mp4` + `/hero/hero.webm`. Theme values from Global Constraints.
+- [ ] **Step 4:** Write `salon.config.ts` with the spec's demo data: Rizo Studio, legal name "Rizo Studio S.L.", Calle del Pez 21, 28004 Madrid, phone `+34 910 000 000`, `hola@rizostudio.example`; hours Tue–Sat 10:00–20:00, Sun/Mon closed; `slotStepMin 15`, `minNoticeMin 120`, `bookingWindowDays 30`, `cancelCutoffMin 120`, `retentionMonths 24`, `rateLimitPerHour 5`. Services (id, minutes, euros): `scissor-cut` 45 €32, `skin-fade` 40 €28, `beard-sculpt` 25 €18, `hot-towel-shave` 40 €28, `blow-dry-style` 30 €20, `kids-cut` 30 €18, `grey-blending` 30 €25, each `bufferMin 5`, EN + ES names/descriptions. Barbers: `alvaro` (all services, Tue–Sat), `marco` (all but `hot-towel-shave`, day off Wednesday = 3), `iker` (cuts, fades, kids, blow-dry; hours 12:00–20:00 every open day). Hero: `/hero/hero.webp`, `/hero/depth.webp`, video `/hero/hero.mp4` + `/hero/hero.webm`. Location: `{ lat: 40.4256, lng: -3.7068, mapsUrl: 'https://www.google.com/maps?q=40.4256,-3.7068' }` (Calle del Pez, Madrid). Theme values from Global Constraints.
 - [ ] **Step 5:** Run the test → PASS. Commit `feat: salon configuration schema and Rizo Studio demo config`.
 
 ### Task 3: Time-zone helpers
@@ -275,17 +275,17 @@ Algorithm (not determined by the tests alone): for each barber who offers the se
 ### Task 10: Homepage with the 3D hero
 
 **Files:**
-- Create: `src/lib/opening-status.ts`, `src/components/hero/HeroScene.tsx`, `src/components/hero/shader.ts`, `src/components/Marquee.tsx`, `src/components/CursorRing.tsx`, `src/app/[locale]/page.tsx`, sections `src/components/home/{Services,Barbers,Visit}.tsx`
-- Test: `tests/unit/opening-status.test.ts`, `tests/e2e/home.spec.ts`
+- Create: `src/lib/opening-status.ts`, `src/lib/maps.ts`, `src/components/hero/HeroScene.tsx`, `src/components/hero/shader.ts`, `src/components/Marquee.tsx`, `src/components/CursorRing.tsx`, `src/app/[locale]/page.tsx`, sections `src/components/home/{Services,Barbers,Visit}.tsx`
+- Test: `tests/unit/opening-status.test.ts`, `tests/unit/maps.test.ts`, `tests/e2e/home.spec.ts`
 
 **Interfaces:**
 - Consumes: `config.hero`, dictionaries.
-- Produces: `openingStatus(now: Date, config): { open: boolean; label: { key: 'openUntil' | 'opensToday' | 'opensTomorrow' | 'opensOn'; time: string; weekday?: number } }`; `<HeroScene photo depth video? />` (client component).
+- Produces: `mapEmbedUrl(loc): string` → `https://www.google.com/maps?q=${lat},${lng}&z=17&output=embed`; `directionsUrl(loc): string` → `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}` (both in `src/lib/maps.ts`); `openingStatus(now: Date, config): { open: boolean; label: { key: 'openUntil' | 'opensToday' | 'opensTomorrow' | 'opensOn'; time: string; weekday?: number } }`; `<HeroScene photo depth video? />` (client component).
 
-Port `docs/prototype/hero.html` faithfully: the WebGL depth renderer (fixed-point parallax, bloom, LED sweep, vignette, intro), the video loaded with `fetch` → blob URL → texture (WebM if `canPlayType` VP9, else MP4), dust/air canvas, grain, headline line reveal + sheen, marquee, cursor ring, magnetic buttons, ES toggle. Keep the photo `<img>` as first paint and fallback (no WebGL, reduced motion, video error). Below the hero, add three calm sections (no WebGL): services with prices/durations, barbers (name, monogram, bio, services), visit (address, hours table, phone as selectable text). The primary CTA goes to `/[locale]/book`.
+Port `docs/prototype/hero.html` faithfully: the WebGL depth renderer (fixed-point parallax, bloom, LED sweep, vignette, intro), the video loaded with `fetch` → blob URL → texture (WebM if `canPlayType` VP9, else MP4), dust/air canvas, grain, headline line reveal + sheen, marquee, cursor ring, magnetic buttons, ES toggle. Keep the photo `<img>` as first paint and fallback (no WebGL, reduced motion, video error). Below the hero, add three calm sections (no WebGL): services with prices/durations, barbers (name, monogram, bio, services), visit / "Find us" (embedded Google Map in a lazy-loaded `<iframe loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map">`, a "Get directions" button to `directionsUrl`, a link "Open in Google Maps" to `config.location.mapsUrl`, address, hours table, phone as selectable text). The primary CTA goes to `/[locale]/book`.
 
-- [ ] **Step 1:** Failing unit tests: Tuesday 12:00 local → `{ open: true, key 'openUntil', time '20:00' }`; Tuesday 09:00 → `opensToday 10:00`; Saturday 21:00 → `opensOn` weekday 2; Wednesday 20:30 → `opensTomorrow`.
-- [ ] **Step 2:** Failing e2e: `/en` shows heading "The art of the cut."; clicking `ES` → URL `/es` and heading "El arte del corte."; "Reserve your chair" navigates to `/en/book`; with `reducedMotion: 'reduce'` the hero `<img>` is visible and `<html>` does not have class `gl-ready`; phone project: no horizontal scroll (`scrollWidth <= clientWidth`).
+- [ ] **Step 1:** Failing unit tests: `mapEmbedUrl({ lat: 40.9734694, lng: -5.6493969 })` contains `q=40.9734694,-5.6493969` and `output=embed`; `directionsUrl` of the same contains `destination=40.9734694,-5.6493969`; Tuesday 12:00 local → `{ open: true, key 'openUntil', time '20:00' }`; Tuesday 09:00 → `opensToday 10:00`; Saturday 21:00 → `opensOn` weekday 2; Wednesday 20:30 → `opensTomorrow`.
+- [ ] **Step 2:** Failing e2e: `/en` shows heading "The art of the cut."; clicking `ES` → URL `/es` and heading "El arte del corte."; "Reserve your chair" navigates to `/en/book`; with `reducedMotion: 'reduce'` the hero `<img>` is visible and `<html>` does not have class `gl-ready`; phone project: no horizontal scroll (`scrollWidth <= clientWidth`); the "Find us" section has an `iframe[title="Map"]` whose `src` contains `output=embed` and a "Get directions" link to `google.com/maps/dir`.
 - [ ] **Step 3:** Implement. **Step 4:** `npm test && npm run e2e -- tests/e2e/home.spec.ts` → PASS.
 - [ ] **Step 5:** Commit `feat: animated 3D homepage`.
 
@@ -371,3 +371,19 @@ Steps in the form (one screen each on phone, a progress line on top): service �
 - [ ] **Step 5:** Commit `docs: privacy page, README and screenshots`; push the branch.
 
 Deployment itself (creating Neon/Vercel/Resend accounts, setting env vars, connecting the domain) is NOT part of this plan: Claude asks Ziad before touching any outside service.
+
+Note for Tasks 10–14: e2e tests read the salon name, services and barbers from `salon.config.ts` instead of hard-coding "Rizo Studio", so Task 16 can run the same suite.
+
+### Task 16: Client mock-up — Barbería Plaza Barcelona (Salamanca)
+
+**Files:**
+- Branch: `client/plaza-barcelona` created from the finished `main` work
+- Modify (on that branch only): `salon.config.ts`, `README.md` (short "Mock-up for Barbería Plaza Barcelona" note)
+
+**Interfaces:**
+- Consumes: the whole product; only the configuration changes (this is the spec's "copy the project, edit one file" workflow).
+
+- [ ] **Step 1:** Write the config: name "Barbería Plaza Barcelona", address "Plaza de Barcelona, 17, 37004 Salamanca", `location: { lat: 40.9734694, lng: -5.6493969, mapsUrl: 'https://www.google.com/maps?q=40.9734694,-5.6493969' }`, `timezone 'Europe/Madrid'`, `locales ['es','en']`, `defaultLocale 'es'`. Hours, phone, email, services, prices and barbers use the values Ziad got from the owner; any value not yet confirmed is a placeholder listed in a `// TODO(confirm with owner)` comment block at the top of the file and on the README note.
+- [ ] **Step 2:** Run `npm run typecheck && npm test && npm run e2e -- --project=phone` → pass (the e2e suite reads names from config, so it must not hard-code "Rizo").
+- [ ] **Step 3:** Screenshots (home desktop + phone, booking, "Find us" with the map) into `docs/screenshots/plaza-barcelona/` for Ziad's pitch.
+- [ ] **Step 4:** Commit `chore: Barbería Plaza Barcelona mock-up configuration` on the client branch and push. Do not deploy or publish anything under their name until Ziad confirms the owner agreed.

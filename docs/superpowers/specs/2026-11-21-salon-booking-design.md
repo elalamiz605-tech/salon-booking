@@ -46,6 +46,18 @@ tests, screenshots).
 - Mobile-first, fast, accessible, and visually distinctive (must not look like a
   generic template).
 
+- **Find us / Google Maps** (added 2026-11-22): every site has a "Find us" section with an
+  embedded Google Map of the salon (no API key: the public `maps?q=lat,lng&output=embed`
+  embed), a "Get directions" button opening Google Maps, and the address, hours and phone.
+  The salon's coordinates and its Google Maps link live in the configuration file.
+- **First real client pitch: Barbería Plaza Barcelona**, Plaza de Barcelona 17, 37004
+  Salamanca (Castilla y León), coordinates 40.9734694, -5.6493969. Ziad prepares their
+  site as a mock-up to show them, on a separate branch with its own configuration
+  (Spanish as the default language). It is not published under their name without their
+  agreement, and their own photos are used only if they provide them. Unknown details
+  (hours, phone, services, prices, barbers) stay clearly marked placeholders until the
+  owner confirms them.
+
 ## Non-goals (v1)
 
 - Online payment or deposits.
