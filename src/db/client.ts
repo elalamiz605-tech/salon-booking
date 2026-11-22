@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import path from "node:path";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import * as schema from "./schema";
@@ -13,6 +14,7 @@ export async function openPglite(dataDir?: string): Promise<Db> {
   const { btree_gist } = await import("@electric-sql/pglite/contrib/btree_gist");
   const { drizzle } = await import("drizzle-orm/pglite");
   const { migrate } = await import("drizzle-orm/pglite/migrator");
+  if (dataDir) mkdirSync(path.dirname(path.resolve(dataDir)), { recursive: true });
   const client = new PGlite({ dataDir, extensions: { btree_gist } });
   const db = drizzle(client, { schema });
   await migrate(db, { migrationsFolder: MIGRATIONS_DIR });

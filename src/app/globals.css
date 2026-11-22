@@ -60,3 +60,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+.input {
+  width: 100%; background: transparent; color: var(--ivory); font: inherit;
+  border: 1px solid var(--line-soft); padding: 12px 14px; border-radius: 0;
+}
+.input:focus { border-color: var(--accent); outline: none; }

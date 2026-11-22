@@ -25,6 +25,7 @@ export default defineConfig({
       ADMIN_PASSWORD_HASH: bcrypt.hashSync(E2E_ADMIN.password, 10),
       SESSION_SECRET: "test-secret-at-least-32-characters-long",
       CRON_SECRET: "test-cron",
+      BOOKING_RATE_LIMIT: "1000",
     },
   },
 });
